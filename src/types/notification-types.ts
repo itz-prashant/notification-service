@@ -6,5 +6,5 @@ export interface Message {
 }
 
 export interface NotificationTransport {
-  send(message: Message): Promise<void>;
+  send: (message: Message) => Promise<void>;
 }

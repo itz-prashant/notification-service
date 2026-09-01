@@ -1,5 +1,8 @@
+import config from "config"
 import { Consumer, EachMessagePayload, Kafka } from "kafkajs";
 import { MessageBroker } from "../types/broker";
+import { createNotificationTransport } from "../factories/notification-factory";
+import { handleOrderHTML, handleOrderText } from "../../handlers/order-handler";
 
 export class KafkaBroker implements MessageBroker {
   private consumer: Consumer;
@@ -39,6 +42,17 @@ export class KafkaBroker implements MessageBroker {
           topic,
           partition,
         });
+        if (topic === "order") {
+          const transport = createNotificationTransport("mail");
+          const order = JSON.parse(message.value.toString())
+          
+          await transport.send({
+            to: config.get("mail.from"),
+            subject: "Order update",
+            text: handleOrderText(order),
+            html: handleOrderHTML(order)
+          });
+        }
       },
     });
   }
